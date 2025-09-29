@@ -1,0 +1,111 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación de Películas Famosas en Latinoamérica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 2em;
+        }
+        section {
+            padding: 2em;
+            margin: 1em auto;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #e50914;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1em 0;
+        }
+        p {
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Películas Famosas en Latinoamérica</h1>
+    </header>
+
+    <section id="pelicula1">
+        <h2>Amores Perros (México)</h2>
+        <img src="images/pelicula1.jpg" alt="Póster de Amores Perros">
+        <p>
+            "Amores Perros" (2000), dirigida por Alejandro González Iñárritu, es un drama mexicano que entrelaza tres historias conectadas por un accidente automovilístico en la Ciudad de México. La película explora temas de amor, pérdida y redención, y es conocida por su estilo crudo y realista.
+        </p>
+    </section>
+
+    <section id="pelicula2">
+        <h2>Ciudad de Dios (Brasil)</h2>
+        <img src="images/pelicula2.jpg" alt="Póster de Ciudad de Dios">
+        <p>
+            "Ciudad de Dios" (2002), dirigida por Fernando Meirelles, es una película brasileña que retrata la vida en las favelas de Río de Janeiro a través de los ojos de un joven fotógrafo. La cinta es aclamada por su narrativa dinámica y su impacto visual.
+        </p>
+    </section>
+
+    <section id="pelicula3">
+        <h2>Y tu mamá también (México)</h2>
+        <img src="images/pelicula3.jpg" alt="Póster de Y tu mamá también">
+        <p>
+            "Y tu mamá también" (2001), dirigida por Alfonso Cuarón, es una película mexicana que sigue a dos adolescentes y una mujer mayor en un viaje por carretera. La cinta combina elementos de comedia, drama y coming-of-age, explorando temas de amistad y sexualidad.
+        </p>
+    </section>
+</body>
+</html>
